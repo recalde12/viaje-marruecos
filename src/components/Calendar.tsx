@@ -1,52 +1,40 @@
-import { itinerary } from '../data/tripData';
+"use client";
 
-// Definimos qué recibe el componente
-interface CalendarProps {
-  missions: { id: number; title: string; points: number; completed: boolean }[];
-}
+export default function Calendar({ missions }: any) {
+  // Filtramos solo las misiones globales (itinerario)
+  const itinerary = missions.filter((m: any) => m.type === 'global');
 
-export default function Calendar({ missions }: CalendarProps) {
   return (
     <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
-      <h2 className="text-2xl font-bold mb-5 text-blue-900">📅 Itinerario</h2>
-      <div className="space-y-3">
-        {itinerary.map((day, index) => {
-          // Buscamos si este día tiene una misión de reserva vinculada
-          const linkedMission = day.missionId ? missions.find(m => m.id === day.missionId) : null;
-
-          return (
-            <details key={index} className="group bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-blue-300 open:border-blue-500 open:bg-blue-50/30 transition-all duration-200 shadow-sm">
-              <summary className="font-semibold text-lg list-none flex justify-between items-center text-gray-800">
-                <span>Día {day.day}: {day.title}</span>
-                <span className="text-blue-600 group-open:rotate-180 transition-transform duration-300 ml-4">▼</span>
-              </summary>
-              <div className="mt-4 text-gray-700 border-t border-gray-100 pt-4">
-                
-                <div className="flex flex-wrap gap-2 items-center mb-3">
-                  <span className="font-medium text-xs text-blue-800 bg-blue-100 px-3 py-1 rounded-full uppercase tracking-wider">{day.date}</span>
-                  
-                  {/* AQUÍ ESTÁ LA MAGIA: El estado de la reserva */}
-                  {linkedMission && (
-                    <span className={`font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider border ${
-                      linkedMission.completed 
-                        ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
-                        : 'bg-red-50 text-red-600 border-red-200 animate-pulse'
-                    }`}>
-                      {linkedMission.completed ? '✅ Alojamiento Reservado' : '⚠️ Falta Reservar'}
-                    </span>
-                  )}
+      <h2 className="text-2xl font-bold text-blue-900 mb-6 flex items-center gap-2">
+        📅 Itinerario y Reservas
+      </h2>
+      
+      <div className="space-y-6">
+        {itinerary.length > 0 ? (
+          itinerary.map((item: any) => (
+            <div key={item.id} className="relative pl-8 border-l-2 border-blue-100 pb-2">
+              <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-blue-500 border-4 border-white shadow-sm" />
+              
+              <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">
+                    Día {item.day_info} · {item.location}
+                  </span>
+                  <span className="text-[10px] font-bold bg-blue-200 text-blue-700 px-2 py-0.5 rounded-full">
+                    +{item.points} XP
+                  </span>
                 </div>
-
-                <p className="leading-relaxed text-gray-600">{day.details}</p>
-                
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="text-blue-500 text-lg">📍</span> 
-                  <span className="text-sm font-semibold text-gray-700">{day.location}</span>
-                </div>
+                <h3 className="font-bold text-blue-900 text-base leading-tight mb-2">{item.title}</h3>
+                <p className="text-xs text-blue-700/70 leading-relaxed italic">
+                  {item.details}
+                </p>
               </div>
-            </details>
-          );
-        })}
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-400 text-sm py-10 italic">Todas las reservas completadas. ¡Buen viaje! ✈️</p>
+        )}
       </div>
     </div>
   );

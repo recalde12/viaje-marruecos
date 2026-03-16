@@ -1,57 +1,63 @@
 "use client";
+import { useTransition } from 'react';
+import { completeMission, farmMission } from '../../app/actions';
+import confetti from 'canvas-confetti'; // Importamos el confeti
 
-interface Mission {
-  id: number;
-  title: string;
-  points: number;
-  completed: boolean;
-}
+export default function Missions({ missions }: any) {
+  const [isPending, startTransition] = useTransition();
 
-interface MissionsProps {
-  missions: Mission[];
-  toggleMission: (id: number) => void;
-}
+  const handleComplete = (id: number, points: number, title: string) => {
+    // 💥 Efecto de Confeti
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#fbbf24', '#3b82f6', '#ffffff']
+    });
 
-export default function Missions({ missions, toggleMission }: MissionsProps) {
-  // Calculamos el porcentaje para la barra de progreso
-  const progress = Math.round((missions.filter(m => m.completed).length / missions.length) * 100);
+    startTransition(async () => {
+      await completeMission(id, points, title);
+    });
+  };
 
   return (
     <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100">
-      <div className="flex justify-between items-end mb-5">
-        <h2 className="text-2xl font-bold text-amber-600">📝 Checklist Reservas</h2>
-        <span className="text-sm font-bold text-gray-400">{progress}% Completado</span>
-      </div>
-      
-      {/* Barra de progreso */}
-      <div className="w-full bg-gray-100 rounded-full h-2.5 mb-6">
-        <div className="bg-amber-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-blue-900">🎯 Misiones Disponibles</h2>
+        <button 
+          onClick={() => startTransition(() => farmMission())}
+          className="text-xs bg-blue-100 text-blue-600 font-bold px-3 py-1 rounded-full hover:bg-blue-200 transition-colors"
+        >
+          + Misión Extra
+        </button>
       </div>
 
-      <ul className="space-y-3">
-        {missions.map((mission) => (
-          <li 
-            key={mission.id} 
-            onClick={() => toggleMission(mission.id)}
-            className={`flex items-center justify-between p-4 rounded-xl cursor-pointer border transition-all duration-200 ${
-              mission.completed 
-                ? 'bg-gray-50 border-transparent opacity-60' 
-                : 'bg-white border-amber-200 hover:border-amber-400 hover:shadow-md'
-            }`}
-          >
-            <div className="flex items-center gap-4">
-              <div className={`w-6 h-6 flex-shrink-0 rounded-full border-2 flex items-center justify-center transition-colors ${
-                mission.completed ? 'border-gray-400 bg-gray-400 text-white' : 'border-amber-500'
-              }`}>
-                {mission.completed && "✓"}
+      <div className="space-y-4">
+        {missions.length > 0 ? (
+          missions.map((m: any) => (
+            <div key={m.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-blue-100 transition-all">
+              <div className="flex-1">
+                <p className="font-bold text-gray-800 text-sm">{m.title}</p>
+                <div className="flex gap-2 mt-1">
+                  <span className="text-[10px] font-black text-amber-500 uppercase">{m.points} XP</span>
+                  <span className={`text-[10px] font-bold px-2 rounded-md ${m.type === 'global' ? 'bg-purple-100 text-purple-600' : 'bg-green-100 text-green-600'}`}>
+                    {m.type === 'global' ? '🌍 Grupo' : '👤 Individual'}
+                  </span>
+                </div>
               </div>
-              <span className={`font-medium text-sm md:text-base ${mission.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
-                {mission.title}
-              </span>
+              <button
+                onClick={() => handleComplete(m.id, m.points, m.title)}
+                disabled={isPending}
+                className="ml-4 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-xl shadow-md transition-transform active:scale-90 disabled:opacity-50"
+              >
+                ✅
+              </button>
             </div>
-          </li>
-        ))}
-      </ul>
+          ))
+        ) : (
+          <p className="text-center text-gray-400 text-sm py-4 italic">No hay misiones por ahora. ¡A descansar!</p>
+        )}
+      </div>
     </div>
   );
 }
